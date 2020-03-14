@@ -10,7 +10,6 @@ import (
 	"strings"
 	"unicode"
 
-	core "github.com/zokypesch/proto-lib/core"
 	utils "github.com/zokypesch/proto-lib/utils"
 	tmp "github.com/zokypesch/proto-tools/template"
 )
@@ -103,7 +102,7 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 	var tables []string
 	var err error
 
-	db := core.InitDBWithoutLog(host, dbName, user, pass, 3306)
+	db := utils.InitDBWithoutLog(host, dbName, user, pass, 3306)
 	err = db.Raw("SHOW TABLES").Pluck(fmt.Sprintf("Tables_in_%s", dbName), &tables).Error
 
 	if err != nil {
