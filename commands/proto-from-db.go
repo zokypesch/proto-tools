@@ -34,7 +34,13 @@ type table struct {
 	NameOriginal   string
 	Fields         []*field
 	Joins          []*join
+	GetAll         *getall
 	PrimaryKeyName string
+}
+
+type getall struct {
+	Page    int
+	PerPage int
 }
 
 type join struct {
@@ -210,6 +216,13 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 			vJoin.Option = fmt.Sprintf("[(foreignKey) = \"%s\"]", vJoin.ReferencedColumnNameProto)
 			vJoin.OrdinalPosition = lastField
 		}
+		//cahge per page
+		lastField++
+		newGetAll := &getall{
+			Page:    lastField,
+			PerPage: lastField + 1,
+		}
+		vTable.GetAll = newGetAll
 	}
 
 	// mapping datas to template

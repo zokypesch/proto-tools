@@ -6,14 +6,13 @@ var TmplProtoFromDb = `syntax = "proto3";
 option go_package = "{{ .Name }}";
 package {{ .Name }};
 
-import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
 import "github.com/zokypesch/proto-lib/proto/options.proto";
 import "google/protobuf/timestamp.proto";
 
 service {{ .Name }} {{ unescape "{" }}
 {{- range $table := .Tables }}
-	rpc Create{{ ucfirst $table.Name }}(Create{{ ucfirst $table.Name }}Request) returns(General{{ ucfirst $table.Name }}Response) {
+	rpc Create{{ ucfirst $table.Name }}(Create{{ ucfirst $table.Name }}Request) returns({{ ucfirst $table.Name }}) {
 		option (google.api.http) = {
 			post: "/v1/{{ $table.Name }}",
 			body: "*"
@@ -22,7 +21,7 @@ service {{ .Name }} {{ unescape "{" }}
 		option(agregator) = "{{ ucfirst $table.Name }}.Create";
 	};
 
-	rpc GetAll{{ ucfirst $table.Name }}({{ ucfirst $table.Name }}) returns(GetAll{{ ucfirst $table.Name }}Response) {
+	rpc GetAll{{ ucfirst $table.Name }}(GetAll{{ ucfirst $table.Name }}Request) returns(GetAll{{ ucfirst $table.Name }}Response) {
 		option (google.api.http) = {
 			get: "/v1/{{ $table.Name }}"
 		};
@@ -30,7 +29,7 @@ service {{ .Name }} {{ unescape "{" }}
 		option(agregator) = "{{ ucfirst $table.Name }}.GetAll";
 	};
 
-	rpc Update{{ ucfirst $table.Name }}(Create{{ ucfirst $table.Name }}Request) returns(General{{ ucfirst $table.Name }}Response) {
+	rpc Update{{ ucfirst $table.Name }}(Create{{ ucfirst $table.Name }}Request) returns({{ ucfirst $table.Name }}) {
 		option (google.api.http) = {
 			put: "/v1/{{ $table.Name }}",
 			body: "*"
@@ -41,14 +40,13 @@ service {{ .Name }} {{ unescape "{" }}
 
 	rpc Delete{{ ucfirst $table.Name }}(GetByIdRequest) returns(DeleteResponse) {
 		option (google.api.http) = {
-			delete: "/v1/{{ $table.Name }}/{{ unescape "{"}}{{ $table.PrimaryKeyName }}{{ unescape "}"}}",
-			body: "*"
+			delete: "/v1/{{ $table.Name }}/{{ unescape "{"}}{{ $table.PrimaryKeyName }}{{ unescape "}"}}"
 		};
 		option(httpMode) = "delete";
 		option(agregator) = "{{ ucfirst $table.Name }}.Delete";
 	};
 
-	rpc GetById{{ ucfirst $table.Name }}(GetByIdRequest) returns(General{{ ucfirst $table.Name }}Response) {
+	rpc GetById{{ ucfirst $table.Name }}(GetByIdRequest) returns({{ ucfirst $table.Name }}) {
 		option (google.api.http) = {
 			get: "/v1/{{ $table.Name }}/{{ unescape "{"}}{{ $table.PrimaryKeyName }}{{ unescape "}"}}"
 		};
@@ -89,25 +87,21 @@ message Create{{ ucfirst $table.Name }}Request {{ unescape "{" }}
 {{- end}}
 {{ unescape "}" }}
 
-message General{{ ucfirst $table.Name }}Response {{ unescape "{" }}
+message GetAll{{ ucfirst $table.Name }}Request {{ unescape "{" }}
 {{- range $field := $table.Fields }}
-	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.OrdinalPosition }} [(json_name) = "{{ $field.NameProto }}"];
-{{- end}}
-{{- range $join := $table.Joins }}
-{{- if $join.Repeated }}
-	repeated {{ $join.ReferencedTableName }} {{ $join.ReferencedTableOriginal }} = {{ $join.OrdinalPosition }} [(json_name) = "{{ $join.ReferencedColumnNameProto }}"];
-{{- else}}
-	{{ $join.ReferencedTableName }} {{ $join.ReferencedTableOriginal }} = {{ $join.OrdinalPosition }} [(json_name) = "{{ $join.ReferencedColumnNameProto }}"];
+{{- if allowRequest $field.Name }}
+	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.OrdinalPosition }} {{ unescape $field.Option }}
 {{- end}}
 {{- end}}
+	int64 page = {{ $table.GetAll.Page }} [json_name="page"];
+	int64 per_page = {{ $table.GetAll.PerPage }} [json_name="perPage"];
 {{ unescape "}" }}
 
 message GetAll{{ ucfirst $table.Name }}Response {{ unescape "{" }}
-	repeated General{{ ucfirst $table.Name }}Response items = 1 [(json_name) = "items"];
-	int64 total = 2 [(json_name) = "total"];
-	int64 page = 3 [(json_name) = "page"];
-	int64 per_page = 4 [(json_name) = "perPage"];
-	int64 last_page = 5 [(json_name) = "lastPage"];
+	repeated {{ ucfirst $table.Name }} items = 1 [json_name = "items"];
+	int64 total = 2 [json_name = "total"];
+	int64 page = 3 [json_name = "page"];
+	int64 per_page = 4 [json_name = "perPage"];
 {{ unescape "}" }}
 
 {{- end}}
