@@ -162,7 +162,7 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 				vField.Required = true
 				usingComma = true
 
-				options += fmt.Sprintf("required) = true,(required_type)=\"required%s\"", additional)
+				options += fmt.Sprintf("(required) = true,(required_type)=\"required%s\"", additional)
 			}
 			// options = strings.TrimSuffix(options, ",")
 			if usingComma {
