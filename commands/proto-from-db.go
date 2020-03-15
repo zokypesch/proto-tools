@@ -70,6 +70,7 @@ type field struct {
 	IsNullable      string
 	OrdinalPosition int
 	NameProto       string
+	RequestPosition int
 }
 
 // Execute for executing command
@@ -216,11 +217,21 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 			vJoin.Option = fmt.Sprintf("[(foreignKey) = \"%s\"]", vJoin.ReferencedColumnNameProto)
 			vJoin.OrdinalPosition = lastField
 		}
+	}
+
+	// build request position
+	for _, vTable := range scheme.Tables {
+		lastIndex := 1
+		for _, vField := range vTable.Fields {
+			if allowRequest(vField.Name) == true {
+				vField.RequestPosition = lastIndex
+				lastIndex++
+			}
+		}
 		//cahge per page
-		lastField++
 		newGetAll := &getall{
-			Page:    lastField,
-			PerPage: lastField + 1,
+			Page:    lastIndex,
+			PerPage: lastIndex + 1,
 		}
 		vTable.GetAll = newGetAll
 	}

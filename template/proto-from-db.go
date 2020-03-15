@@ -51,7 +51,7 @@ service {{ .Name }} {{ unescape "{" }}
 			get: "/v1/{{ $table.Name }}/{{ unescape "{"}}{{ $table.PrimaryKeyName }}{{ unescape "}"}}"
 		};
 		option(httpMode) = "get";
-		option(agregator) = "{{ ucfirst $table.Name }}.GetById";
+		option(agregator) = "{{ ucfirst $table.Name }}.GetBy{{ ucfirst $table.PrimaryKeyName }}";
 	};
 {{- end}}
 {{ unescape "}" }}
@@ -82,7 +82,7 @@ message {{ ucfirst $table.Name }} {{ unescape "{" }}
 message Create{{ ucfirst $table.Name }}Request {{ unescape "{" }}
 {{- range $field := $table.Fields }}
 {{- if allowRequest $field.Name }}
-	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.OrdinalPosition }} {{ unescape $field.Option }}
+	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.RequestPosition }} {{ unescape $field.Option }}
 {{- end}}
 {{- end}}
 {{ unescape "}" }}
@@ -90,7 +90,7 @@ message Create{{ ucfirst $table.Name }}Request {{ unescape "{" }}
 message GetAll{{ ucfirst $table.Name }}Request {{ unescape "{" }}
 {{- range $field := $table.Fields }}
 {{- if allowRequest $field.Name }}
-	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.OrdinalPosition }} {{ unescape $field.Option }}
+	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.RequestPosition }};
 {{- end}}
 {{- end}}
 	int64 page = {{ $table.GetAll.Page }} [json_name="page"];
