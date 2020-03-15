@@ -107,10 +107,10 @@ message GetAll{{ ucfirst $table.Name }}Response {{ unescape "{" }}
 {{- end}}
 
 message GetByIdRequest {{ unescape "{" }}
-	int64 id = 1;
+	int64 id = 1 [(required) = true,(required_type)="required"];
 {{ unescape "}" }}
 
 message DeleteResponse {{ unescape "{" }}
-	int64 id = 1;
+	int64 id = 1 [(required) = true,(required_type)="required"];
 {{ unescape "}" }}
 `
