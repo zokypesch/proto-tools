@@ -111,6 +111,6 @@ message GetByIdRequest {{ unescape "{" }}
 {{ unescape "}" }}
 
 message DeleteResponse {{ unescape "{" }}
-	int64 id = 1 [(required) = true,(required_type)="required"];
+	int64 id = 1;
 {{ unescape "}" }}
 `
