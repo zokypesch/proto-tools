@@ -134,7 +134,7 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 		for _, vField := range vTable.Fields {
 			switch vField.DataType {
 			case "bigint", "int", "tinyint", "float", "smallint":
-				vField.DataTypeProto = "int32"
+				vField.DataTypeProto = "int64"
 			case "decimal", "double":
 				vField.DataTypeProto = "float"
 			case "varchar", "text", "json", "char", "enum", "tinytext":
