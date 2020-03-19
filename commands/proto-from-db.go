@@ -196,9 +196,9 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 			information_schema.KEY_COLUMN_USAGE ke
 		WHERE
 			ke.referenced_table_name IS NOT NULL
-				AND table_schema = 'transaction'
+				AND table_schema = ?
 						AND table_name=?
-		ORDER BY ke.referenced_table_name;`, vTable.NameOriginal).Scan(&jn)
+		ORDER BY ke.referenced_table_name;`, dbName, vTable.NameOriginal).Scan(&jn)
 
 		vTable.Joins = jn
 	}
@@ -213,8 +213,8 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 			if len(opt) == 2 && opt[1] == "many" {
 				vJoin.Repeated = true
 			}
-			vJoin.ReferencedColumnNameProto = utils.ConvertUnderscoreToCamel(vJoin.ReferencedColumnName)
-			vJoin.Option = fmt.Sprintf("[(foreignKey) = \"%s\"]", vJoin.ReferencedColumnNameProto)
+			vJoin.ReferencedColumnNameProto = utils.ConvertUnderscoreToCamel(vJoin.ColumnName)
+			vJoin.Option = fmt.Sprintf("[(foreignKey) = \"%s\", (associateKey) = \"%s\"]", vJoin.ReferencedColumnNameProto, utils.ConvertUnderscoreToCamel(vJoin.ReferencedColumnName))
 			vJoin.OrdinalPosition = lastField
 		}
 	}
