@@ -241,9 +241,10 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 	buf := bytes.NewBuffer(nil)
 	err = template.Must(template.New("").Funcs(
 		template.FuncMap{
-			"unescape":     unescape,
-			"ucfirst":      ucFirst,
-			"allowRequest": allowRequest,
+			"unescape":           unescape,
+			"ucfirst":            ucFirst,
+			"allowRequest":       allowRequest,
+			"allowRequestWithId": allowRequestWithID,
 		}).
 		Parse(tmpl)).Execute(buf, scheme)
 
@@ -291,8 +292,24 @@ var ignoreField = []string{
 	"updated_by",
 }
 
+var ignoreFieldWithID = []string{
+	"created_at",
+	"updated_at",
+	"created_by",
+	"updated_by",
+}
+
 func allowRequest(field string) bool {
 	for _, v := range ignoreField {
+		if v == field {
+			return false
+		}
+	}
+	return true
+}
+
+func allowRequestWithID(field string) bool {
+	for _, v := range ignoreFieldWithID {
 		if v == field {
 			return false
 		}

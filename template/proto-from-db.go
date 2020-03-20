@@ -29,9 +29,9 @@ service {{ .Name }} {{ unescape "{" }}
 		option(agregator) = "{{ ucfirst $table.Name }}.GetAll";
 	};
 
-	rpc Update{{ ucfirst $table.Name }}(Create{{ ucfirst $table.Name }}Request) returns({{ ucfirst $table.Name }}) {
+	rpc Update{{ ucfirst $table.Name }}(Update{{ ucfirst $table.Name }}Request) returns({{ ucfirst $table.Name }}) {
 		option (google.api.http) = {
-			put: "/v1/{{ $table.Name }}",
+			put: "/v1/{{ $table.Name }}/{{ unescape "{"}}{{ $table.PrimaryKeyName }}{{ unescape "}"}}",
 			body: "*"
 		};
 		option(httpMode) = "put";
@@ -82,6 +82,15 @@ message {{ ucfirst $table.Name }} {{ unescape "{" }}
 message Create{{ ucfirst $table.Name }}Request {{ unescape "{" }}
 {{- range $field := $table.Fields }}
 {{- if allowRequest $field.Name }}
+	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.RequestPosition }} {{ unescape $field.Option }}
+{{- end}}
+{{- end}}
+{{ unescape "}" }}
+
+{{- range $table := .Tables }}
+message Update{{ ucfirst $table.Name }}Request {{ unescape "{" }}
+{{- range $field := $table.Fields }}
+{{- if allowRequestWithId $field.Name }}
 	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.RequestPosition }} {{ unescape $field.Option }}
 {{- end}}
 {{- end}}
