@@ -29,6 +29,7 @@ type dbscheme struct {
 }
 
 type table struct {
+	DBName         string
 	Name           string
 	NameInGo       string
 	NameOriginal   string
@@ -58,19 +59,21 @@ type join struct {
 }
 
 type field struct {
-	Name            string
-	DataType        string
-	DataTypeProto   string
-	ColumnKey       string
-	MaxLength       int
-	Comment         string
-	Option          string
-	Required        bool
-	PrimaryKey      bool
-	IsNullable      string
-	OrdinalPosition int
-	NameProto       string
-	RequestPosition int
+	Name                  string
+	DataType              string
+	DataTypeProto         string
+	ColumnKey             string
+	MaxLength             int
+	Comment               string
+	Option                string
+	OptionJSON            string
+	Required              bool
+	PrimaryKey            bool
+	IsNullable            string
+	OrdinalPosition       int
+	NameProto             string
+	RequestPosition       int
+	RequestUpdatePosition int
 }
 
 // Execute for executing command
@@ -124,7 +127,7 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 		CHARACTER_MAXIMUM_LENGTH as max_length, COLUMN_KEY as column_key, IS_NULLABLE as is_nullable, ORDINAL_POSITION AS ordinal_position
 		FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = ?`, tbl).Scan(&newfields)
 
-		tablesRes = append(tablesRes, &table{NameOriginal: tbl, Name: utils.ConvertUnderscoreToCamel(tbl), Fields: newfields})
+		tablesRes = append(tablesRes, &table{NameOriginal: tbl, Name: utils.ConvertUnderscoreToCamel(tbl), Fields: newfields, DBName: dbName})
 	}
 
 	scheme := dbscheme{Name: utils.ToLowerFirst(dbName), Tables: tablesRes}
@@ -180,6 +183,8 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 			options += fmt.Sprintf("json_name=\"%s\"];", nameInProto)
 			vField.Option = options
 
+			vField.OptionJSON = fmt.Sprintf("[json_name=\"%s\"];", nameInProto)
+
 		}
 		vTable.PrimaryKeyName = primaryName
 	}
@@ -227,6 +232,14 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 				vField.RequestPosition = lastIndex
 				lastIndex++
 			}
+		}
+		lastIndexUpdate := 1
+		for _, vField := range vTable.Fields {
+			if allowRequestWithID(vField.Name) == true {
+				vField.RequestUpdatePosition = lastIndexUpdate
+				lastIndexUpdate++
+			}
+
 		}
 		//cahge per page
 		newGetAll := &getall{

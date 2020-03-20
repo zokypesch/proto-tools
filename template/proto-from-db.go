@@ -14,7 +14,7 @@ service {{ .Name }} {{ unescape "{" }}
 {{- range $table := .Tables }}
 	rpc Create{{ ucfirst $table.Name }}(Create{{ ucfirst $table.Name }}Request) returns({{ ucfirst $table.Name }}) {
 		option (google.api.http) = {
-			post: "/v1/{{ $table.Name }}",
+			post: "/api/v1/{{ $table.DBName }}/{{ $table.NameOriginal }}",
 			body: "*"
 		};
 		option(httpMode) = "post";
@@ -23,7 +23,7 @@ service {{ .Name }} {{ unescape "{" }}
 
 	rpc GetAll{{ ucfirst $table.Name }}(GetAll{{ ucfirst $table.Name }}Request) returns(GetAll{{ ucfirst $table.Name }}Response) {
 		option (google.api.http) = {
-			get: "/v1/{{ $table.Name }}"
+			get: "/api/v1/{{ $table.DBName }}/{{ $table.NameOriginal }}"
 		};
 		option(httpMode) = "get";
 		option(agregator) = "{{ ucfirst $table.Name }}.GetAll";
@@ -31,7 +31,7 @@ service {{ .Name }} {{ unescape "{" }}
 
 	rpc Update{{ ucfirst $table.Name }}(Update{{ ucfirst $table.Name }}Request) returns({{ ucfirst $table.Name }}) {
 		option (google.api.http) = {
-			put: "/v1/{{ $table.Name }}/{{ unescape "{"}}{{ $table.PrimaryKeyName }}{{ unescape "}"}}",
+			put: "/api/v1/{{ $table.DBName }}/{{ $table.NameOriginal }}/{{ unescape "{"}}{{ $table.PrimaryKeyName }}{{ unescape "}"}}",
 			body: "*"
 		};
 		option(httpMode) = "put";
@@ -40,7 +40,7 @@ service {{ .Name }} {{ unescape "{" }}
 
 	rpc Delete{{ ucfirst $table.Name }}(GetByIdRequest) returns(DeleteResponse) {
 		option (google.api.http) = {
-			delete: "/v1/{{ $table.Name }}/{{ unescape "{"}}{{ $table.PrimaryKeyName }}{{ unescape "}"}}"
+			delete: "/api/v1/{{ $table.DBName }}/{{ $table.NameOriginal }}/{{ unescape "{"}}{{ $table.PrimaryKeyName }}{{ unescape "}"}}"
 		};
 		option(httpMode) = "delete";
 		option(agregator) = "{{ ucfirst $table.Name }}.Delete";
@@ -48,7 +48,7 @@ service {{ .Name }} {{ unescape "{" }}
 
 	rpc GetById{{ ucfirst $table.Name }}(GetByIdRequest) returns({{ ucfirst $table.Name }}) {
 		option (google.api.http) = {
-			get: "/v1/{{ $table.Name }}/{{ unescape "{"}}{{ $table.PrimaryKeyName }}{{ unescape "}"}}"
+			get: "/api/v1/{{ $table.DBName }}/{{ $table.NameOriginal }}/{{ unescape "{"}}{{ $table.PrimaryKeyName }}{{ unescape "}"}}"
 		};
 		option(httpMode) = "get";
 		option(agregator) = "{{ ucfirst $table.Name }}.GetBy{{ ucfirst $table.PrimaryKeyName }}";
@@ -90,8 +90,12 @@ message Create{{ ucfirst $table.Name }}Request {{ unescape "{" }}
 message Update{{ ucfirst $table.Name }}Request {{ unescape "{" }}
 {{- range $field := $table.Fields }}
 {{- if allowRequestWithId $field.Name }}
-	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.RequestPosition }} {{ unescape $field.Option }}
+{{- if $field.PrimaryKey }}
+	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.RequestUpdatePosition }} [(required) = true,(required_type)="required",json_name="{{ $field.NameProto }}"];
+{{- else }}
+	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.RequestUpdatePosition }} {{ unescape $field.OptionJSON }}
 {{- end}}
+{{- end }}
 {{- end}}
 {{ unescape "}" }}
 
