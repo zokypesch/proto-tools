@@ -87,7 +87,6 @@ message Create{{ ucfirst $table.Name }}Request {{ unescape "{" }}
 {{- end}}
 {{ unescape "}" }}
 
-{{- range $table := .Tables }}
 message Update{{ ucfirst $table.Name }}Request {{ unescape "{" }}
 {{- range $field := $table.Fields }}
 {{- if allowRequestWithId $field.Name }}
