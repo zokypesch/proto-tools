@@ -31,7 +31,7 @@ service {{ .Name }} {{ unescape "{" }}
 
 	rpc Update{{ ucfirst $table.Name }}(Update{{ ucfirst $table.Name }}Request) returns({{ ucfirst $table.Name }}) {
 		option (google.api.http) = {
-			put: "/api/v1/{{ $table.DBName }}/{{ $table.NameOriginal }}/{{ unescape "{"}}{{ $table.PrimaryKeyName }}{{ unescape "}"}}",
+			put: "/api/v1/{{ $table.DBName }}/{{ $table.NameOriginal }}",
 			body: "*"
 		};
 		option(httpMode) = "put";
@@ -62,9 +62,9 @@ message {{ ucfirst $table.Name }} {{ unescape "{" }}
 	option (isRepo) = true;
 {{- range $field := $table.Fields }}
 {{- if $field.PrimaryKey }}
-	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.OrdinalPosition }} [(isPrimaryKey) = true];
+	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.OrdinalPosition }} [(isPrimaryKey) = true,json_name="{{ $field.NameProto }}"];
 {{- else}}
-	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.OrdinalPosition }};
+	{{ $field.DataTypeProto}} {{ $field.Name}} = {{ $field.OrdinalPosition }} {{ unescape $field.OptionJSON }}
 {{- end}}
 {{- end}}
 {{- range $join := $table.Joins }}

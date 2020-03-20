@@ -219,7 +219,7 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 				vJoin.Repeated = true
 			}
 			vJoin.ReferencedColumnNameProto = utils.ConvertUnderscoreToCamel(vJoin.ColumnName)
-			vJoin.Option = fmt.Sprintf("[(foreignKey) = \"%s\", (associateKey) = \"%s\"]", vJoin.ReferencedColumnNameProto, utils.ConvertUnderscoreToCamel(vJoin.ReferencedColumnName))
+			vJoin.Option = fmt.Sprintf("[(foreignKey) = \"%s\", (associateKey) = \"%s\", json_name=\"%s\"]", vJoin.ReferencedColumnNameProto, utils.ConvertUnderscoreToCamel(vJoin.ReferencedColumnName), utils.ToLowerFirst(vJoin.ReferencedTableName))
 			vJoin.OrdinalPosition = lastField
 		}
 	}
