@@ -125,7 +125,7 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 		var newfields []*field
 		db.Raw(`SELECT COLUMN_NAME AS name, DATA_TYPE as data_type, COLUMN_COMMENT AS comment, 
 		CHARACTER_MAXIMUM_LENGTH as max_length, COLUMN_KEY as column_key, IS_NULLABLE as is_nullable, ORDINAL_POSITION AS ordinal_position
-		FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = ?`, tbl).Scan(&newfields)
+		FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = ? AND table_schema = ?`, tbl, dbName).Scan(&newfields)
 
 		tablesRes = append(tablesRes, &table{NameOriginal: tbl, Name: utils.ConvertUnderscoreToCamel(tbl), Fields: newfields, DBName: dbName})
 	}
