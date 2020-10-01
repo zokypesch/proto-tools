@@ -15,6 +15,8 @@ type CommandInterfacing interface {
 var ListOfCommands = map[string]CommandInterfacing{
 	"gen-proto-db": NewProtoFromDB(),
 	"install":      NewInstall(),
+	"deploy":       NewDeploy(),
+	"etl":          NewETL(),
 }
 
 // Routing for routing the commands
