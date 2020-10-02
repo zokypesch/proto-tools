@@ -95,28 +95,40 @@ func (depl *ETL) Execute(args map[string]string) error {
 	for _, vTable := range tablesRes {
 		var conn []Connection
 		var tbl []Table
-		primaryName := ""
-		// primaryFound := false
-		// mapping field
 		var fl []KeyPair
+
+		primaryName := ""
+		foundPrimary := false
+
+		for _, vField := range vTable.Fields {
+			if vField.ColumnKey == "PRI" {
+				foundPrimary = true
+			}
+		}
 
 		for _, vField := range vTable.Fields {
 			isType := 1
+			isOmitEmpty := false
+
 			if vField.ColumnKey == "PRI" {
 				primaryName = vField.Name
 				isType = 3
 			}
 
-			// if vField.ColumnKey == "UNI" {
-			// 	log.Println("dodol")
-			// 	primaryName = vField.Name
-			// 	isType = 3
-			// }
+			if vField.IsNullable == "YES" {
+				isOmitEmpty = true
+			}
+
+			if !foundPrimary && vField.ColumnKey == "UNI" {
+				primaryName = vField.Name
+				isType = 3
+			}
 
 			fl = append(fl, KeyPair{
-				FieldName: vField.Name,
-				ZQL:       fmt.Sprintf("[%s]", vField.Name),
-				IsType:    isType,
+				FieldName:   vField.Name,
+				ZQL:         fmt.Sprintf("[%s]", vField.Name),
+				IsType:      isType,
+				IsOmitEmpty: isOmitEmpty,
 			})
 
 		}
@@ -208,14 +220,6 @@ func (depl *ETL) Execute(args map[string]string) error {
 			TargetTableField: fl,
 		})
 
-		var existPipe []int64
-		err = depl.dbPipe.Raw("SELECT COUNT(1) AS total FROM pipeline where code = ?", vTable.NameOriginal).Pluck("total", &existPipe).Error
-
-		if err != nil {
-			log.Println("failed to query pipeline")
-			break
-		}
-
 		dataFinal := Conf{
 			KafkaAddress: args["kafka"],
 			Group:        args["group"],
@@ -228,10 +232,21 @@ func (depl *ETL) Execute(args map[string]string) error {
 		coll := SourceConnection{
 			Collection: conn,
 		}
+
+		if err != nil {
+			log.Fatalln("failed serelize: ", err.Error())
+		}
 		resJSONConn, err := json.Marshal(&coll)
 
 		if err != nil {
-			log.Println("failed to serelize json output")
+			log.Fatalln("failed serelize: ", err.Error())
+		}
+
+		var existPipe []int64
+		err = depl.dbPipe.Raw("SELECT COUNT(1) AS total FROM pipeline where code = ?", vTable.NameOriginal).Pluck("total", &existPipe).Error
+
+		if err != nil {
+			log.Println("failed to query pipeline")
 			break
 		}
 
@@ -241,7 +256,7 @@ func (depl *ETL) Execute(args map[string]string) error {
 				log.Println("failed to update pipeline")
 				break
 			}
-			return nil
+			continue
 		}
 
 		err = depl.dbPipe.Exec("INSERT INTO pipeline (code, connection, config) VALUES(?, ?, ?) ", vTable.NameOriginal, resJSONConn, resJSON).Error
@@ -329,7 +344,8 @@ type Agregator struct {
 
 // KeyPair for key pair where
 type KeyPair struct {
-	FieldName string `json:"fieldName"`
-	ZQL       string `json:"ZQL"`
-	IsType    int    `json:"isType"` // 0: default, 1: for insert, 2: for update where condition, 3: all
+	FieldName   string `json:"fieldName"`
+	ZQL         string `json:"ZQL"`
+	IsType      int    `json:"isType"` // 0: default, 1: for insert, 2: for update where condition, 3: all
+	IsOmitEmpty bool   `json:"isOmitEmpty"`
 }
