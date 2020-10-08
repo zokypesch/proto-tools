@@ -583,7 +583,7 @@ func (depl *Deploy) virtual(meta *KubeSvc, clientset dynamic.Interface, args map
 		return err
 	}
 
-	return nil
+	return depl.destination(meta, clientset)
 }
 
 func (depl *Deploy) destination(meta *KubeSvc, clientset dynamic.Interface) error {
