@@ -152,7 +152,29 @@ func (depl *Deploy) deployment(meta *KubeSvc, clientset *kubernetes.Clientset) e
 	var envarKube []apiv1.EnvVar
 	// build env
 	for _, envMap := range meta.KubeEnv {
-		envarKube = append(envarKube, apiv1.EnvVar{Name: envMap.Name, Value: envMap.Val})
+		switch envMap.Type {
+		case 3:
+			envarKube = append(envarKube, apiv1.EnvVar{Name: envMap.Name, ValueFrom: &apiv1.EnvVarSource{
+				SecretKeyRef: &apiv1.SecretKeySelector{
+					Key: envMap.KeySource,
+					LocalObjectReference: apiv1.LocalObjectReference{
+						Name: envMap.Val,
+					},
+				},
+			}})
+		case 2:
+			envarKube = append(envarKube, apiv1.EnvVar{Name: envMap.Name, ValueFrom: &apiv1.EnvVarSource{
+				ConfigMapKeyRef: &apiv1.ConfigMapKeySelector{
+					Key: envMap.KeySource,
+					LocalObjectReference: apiv1.LocalObjectReference{
+						Name: envMap.Val,
+					},
+				},
+			}})
+		default:
+			envarKube = append(envarKube, apiv1.EnvVar{Name: envMap.Name, Value: envMap.Val})
+		}
+
 	}
 
 	finalName := meta.Name
@@ -660,7 +682,6 @@ func (depl *Deploy) destination(meta *KubeSvc, clientset dynamic.Interface) erro
 }
 
 func (depl *Deploy) scale(meta *KubeSvc, clientset dynamic.Interface, args map[string]string) error {
-
 	min, ok := args["min"]
 	override := false
 

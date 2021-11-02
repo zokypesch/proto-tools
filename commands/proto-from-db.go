@@ -131,7 +131,6 @@ func (cmd *ProtoFromDB) Execute(args map[string]string) error {
 	}
 
 	scheme := dbscheme{Name: utils.ToLowerFirst(dbName), Tables: tablesRes}
-
 	for _, vTable := range scheme.Tables {
 		primaryName := ""
 		for _, vField := range vTable.Fields {

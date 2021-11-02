@@ -67,11 +67,13 @@ type KubeSvc struct {
 
 // KubeEnv for env
 type KubeEnv struct {
-	ID      int64
-	Code    string
-	Version string
-	Name    string
-	Val     string
+	ID        int64
+	Code      string
+	Version   string
+	Name      string
+	Val       string
+	Type      int
+	KeySource string
 }
 
 // KubeDigest for digest
