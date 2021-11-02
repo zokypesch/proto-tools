@@ -726,7 +726,7 @@ func (depl *Deploy) scale(meta *KubeSvc, clientset dynamic.Interface, args map[s
 				"maxReplicas": meta.MaxScale,
 				"minReplicas": meta.MinScale,
 				"scaleTargetRef": map[string]interface{}{
-					"apiVersion": "extensions/v1beta1",
+					"apiVersion": "apps/v1",
 					"kind":       "Deployment",
 					"name":       meta.Name,
 				},
